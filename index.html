@@ -1,0 +1,146 @@
+
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>التحقق من البطاقة</title>
+
+<style>
+:root {
+    --primary: #428177;
+    --dark-green: #054239;
+    --deep-green: #002623;
+    --light-bg: #edebe0;
+    --accent-dark: #4a151e;
+    --accent-deep: #260f14;
+    --white: #ffffff;
+    --gray: #3d3a3b;
+    --black: #161616;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    direction: rtl;
+    background: linear-gradient(135deg, var(--deep-green), var(--dark-green));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    background: var(--white);
+    width: 90%;
+    max-width: 500px;
+    padding: 30px 25px;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    text-align: center;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+h2 {
+    margin-top: 0;
+    color: var(--dark-green);
+    font-size: 24px;
+}
+
+.message {
+    font-size: 18px;
+    color: var(--gray);
+    margin: 15px 0;
+    line-height: 1.7;
+}
+
+.sn-box {
+    background: var(--light-bg);
+    padding: 15px;
+    border-radius: 12px;
+    margin: 20px 0;
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--accent-dark);
+    letter-spacing: 2px;
+}
+
+.success {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.error {
+    color: var(--accent-dark);
+    font-weight: bold;
+}
+
+.footer {
+    margin-top: 20px;
+    font-size: 16px;
+    color: var(--black);
+    font-weight: 600;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+    .container { padding: 20px 15px; }
+    .sn-box { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>نتيجة التحقق</h2>
+    <div id="result">جاري التحقق...</div>
+</div>
+
+<script>
+// ==========================================
+// رابط Google Apps Script Web App النهائي
+// ==========================================
+const apiURL = "https://script.google.com/macros/s/AKfycbwJIEDwuD7su5A3AerwRYeZvD_8_h4842el3ceCCrvAysYqMRsaxZMJQdV799JxufcR/exec";
+
+const params = new URLSearchParams(window.location.search);
+const sn = params.get("sn");
+const resultDiv = document.getElementById("result");
+
+if (!sn) {
+    resultDiv.innerHTML = '<div class="error">❌ رقم البطاقة غير موجود</div>';
+} else {
+    fetch(`${apiURL}?sn=${encodeURIComponent(sn)}`)
+    .then(res => res.text())
+    .then(message => {
+        if (message.includes("✅")) {
+            resultDiv.innerHTML = `
+                <div class="message success">
+                    أهلاً وسهلاً بكم<br>
+                    ${message}
+                </div>
+                <div class="sn-box">${sn}</div>
+                <div class="message">
+                    يرجى تسهيل عمل حامل هذه البطاقة
+                </div>
+                <div class="footer">
+                    الاتحاد العام لنقابات العمال
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `<div class="error">${message}</div>`;
+        }
+    })
+    .catch(() => {
+        resultDiv.innerHTML = '<div class="error">❌ حدث خطأ أثناء التحقق</div>';
+    });
+}
+</script>
+
+</body>
+</html>
