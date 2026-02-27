@@ -14,7 +14,6 @@
     --deep-green: #002623;
     --light-bg: #edebe0;
     --accent-dark: #4a151e;
-    --accent-deep: #260f14;
     --white: #ffffff;
     --gray: #3d3a3b;
     --black: #161616;
@@ -88,12 +87,8 @@ h2 {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
-@media (max-width: 480px) {
-    .container { padding: 20px 15px; }
-    .sn-box { font-size: 18px; }
-}
 </style>
+
 </head>
 <body>
 
@@ -103,43 +98,73 @@ h2 {
 </div>
 
 <script>
-// ==========================================
-// رابط Google Apps Script Web App النهائي
-// ==========================================
+
+// رابط Google Apps Script
 const apiURL = "https://script.google.com/macros/s/AKfycbwJIEDwuD7su5A3AerwRYeZvD_8_h4842el3ceCCrvAysYqMRsaxZMJQdV799JxufcR/exec";
 
+// استخراج SN من الرابط
 const params = new URLSearchParams(window.location.search);
 const sn = params.get("sn");
+
 const resultDiv = document.getElementById("result");
 
 if (!sn) {
     resultDiv.innerHTML = '<div class="error">❌ رقم البطاقة غير موجود</div>';
-} else {
-    fetch(`${apiURL}?sn=${encodeURIComponent(sn)}`)
-    .then(res => res.text())
+}
+else {
+
+    const url = apiURL + "?sn=" + encodeURIComponent(sn);
+
+    fetch(url)
+    .then(response => response.text())
     .then(message => {
-        if (message.includes("✅")) {
+
+        if (message.includes("تم التحقق") || message.includes("✅")) {
+
             resultDiv.innerHTML = `
                 <div class="message success">
                     أهلاً وسهلاً بكم<br>
                     ${message}
                 </div>
-                <div class="sn-box">${sn}</div>
+
+                <div class="sn-box">
+                    ${sn}
+                </div>
+
                 <div class="message">
                     يرجى تسهيل عمل حامل هذه البطاقة
                 </div>
+
                 <div class="footer">
                     الاتحاد العام لنقابات العمال
                 </div>
             `;
+
         } else {
-            resultDiv.innerHTML = `<div class="error">${message}</div>`;
+
+            resultDiv.innerHTML = `
+                <div class="error">
+                    ❌ البطاقة غير موجودة
+                </div>
+            `;
+
         }
+
     })
-    .catch(() => {
-        resultDiv.innerHTML = '<div class="error">❌ حدث خطأ أثناء التحقق</div>';
+    .catch(error => {
+
+        resultDiv.innerHTML = `
+            <div class="error">
+                ❌ خطأ في الاتصال بالخادم
+            </div>
+        `;
+
+        console.log(error);
+
     });
+
 }
+
 </script>
 
 </body>
